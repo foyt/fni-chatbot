@@ -1,0 +1,21 @@
+{
+  "name": "fni-chatbot",
+  "version": "0.0.1",
+  "description": "fni-chatbot",
+  "main": "app.njs",
+  "dependencies": {
+    "node-xmpp-core": "0.3.3",
+    "node-xmpp-client": "0.1.6",
+    "ltx": "0.3.4",
+    "i18n": "0.4.1",
+    "nconf": "*",
+    "dirty": "0.9.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/foyt/fni-chatbot.git"
+  },
+  "author": "Antti Leppä / Foyt",
+  "license": "GPLv3",
+  "readmeFilename": "README.md"
+}

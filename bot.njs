@@ -14,10 +14,6 @@ function Bot(userJid, password, nick) {
     password: this.password
   });
   
-  this._client.on('iq', function(data) {
-    console.log(["iq", data]);
-  }.bind(this));
-  
   this._client.on('online', function(data) {
     this.emit('online', data);
   }.bind(this));

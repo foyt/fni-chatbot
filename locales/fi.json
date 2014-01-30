@@ -1,4 +1,5 @@
 {
-  "%s rolled %s (%s)": "%s heitti %s (%s)",
-  "%s fumbled a die roll (%s)": "%s krittasi heiton (%s)"
+	"%s rolled %s (%s)": "%s heitti %s (%s)",
+  "%s rolled %s": "%s heitti %s",
+	"%s fumbled a die roll (%s)": "%s krittasi heiton (%s)"
 }

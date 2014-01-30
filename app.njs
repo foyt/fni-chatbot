@@ -78,18 +78,34 @@ bot.on("command.groupchat.roll", function (data) {
   if (data.args) {
     var roll = data.args.replace(/' '/g, '').toLowerCase();
     var roller = data.fromJID.getResource();
+    var plus = '[ + ]';
+    var minus = '[ - ]';
+    var empty = '[   ]';
     
-    if ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/))) {
-      try {
-        result = eval('Math.round(' + roll
-          .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
-          .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
-        this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s rolled %s (%s)', locale: locale}, roller, result, roll));
-      } catch (e) {
+    if ("fudge" == roll) {
+      var dice = [];
+      var numericResult = 0;
+      for (var i = 0, l = 4; i < l; i++) {
+        var die = Math.round(Math.random() * 2) - 1;
+        dice.push(die === 0 ? empty : die === -1 ? minus : plus);
+        numericResult += die;
+      }
+
+      this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s rolled %s', locale: locale}, roller, dice.join(' ')));
+    } else {
+      if ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/))) {
+        try {
+          var evil = eval;
+          result = evil('Math.round(' + roll
+            .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
+            .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
+          this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s rolled %s (%s)', locale: locale}, roller, result, roll));
+        } catch (e) {
+          this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll));
+        }
+      } else {
         this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll));
       }
-    } else {
-      this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll));
     }
   }
   

@@ -70,43 +70,73 @@ bot.on("command.chat.roomSetting", function (data) {
   }
 });
 
-bot.on("command.groupchat.roll", function (data) {
-  var roomJID = data.fromJID.bare();
-  var roomConfig = nconf.get('rooms:' + roomJID.toString());
-  var locale = roomConfig && roomConfig.locale ? roomConfig.locale : 'en';  
+function rollFudge(locale, roll, roller) {
+  var plus = '[+]';
+  var minus = '[-]';
+  var empty = '[ ]';
+      
+  var dice = [];
+  var numericResult = 0;
+  for (var i = 0, l = 4; i < l; i++) {
+    var die = Math.round(Math.random() * 2) - 1;
+    dice.push(die === 0 ? empty : die === -1 ? minus : plus);
+    numericResult += die;
+  }
+      
+  return i18n.__({phrase: '%s rolled %s', locale: locale}, roller, dice.join(' '));
+}
 
+function rollDie(locale, roll, roller) {
+  if ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/))) {
+    try {
+      var evil = eval;
+      result = evil('Math.round(' + roll
+        .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
+        .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
+      return i18n.__({phrase: '%s rolled %s (%s)', locale: locale}, roller, result, roll);
+    } catch (e) {
+      return i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll);
+    }
+  } else {
+    return i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll);
+  }
+}
+
+bot.on("command.groupchat.roll", function (data) {
   if (data.args) {
+    var roomJID = data.fromJID.bare();
+    var roomConfig = nconf.get('rooms:' + roomJID.toString());
+	var locale = roomConfig && roomConfig.locale ? roomConfig.locale : 'en';  
+	var roller = data.fromJID.getResource();
     var roll = data.args.replace(/' '/g, '').toLowerCase();
-    var roller = data.fromJID.getResource();
-    var plus = '[ + ]';
-    var minus = '[ - ]';
-    var empty = '[   ]';
+    var message = null;
     
     if ("fudge" == roll) {
-      var dice = [];
-      var numericResult = 0;
-      for (var i = 0, l = 4; i < l; i++) {
-        var die = Math.round(Math.random() * 2) - 1;
-        dice.push(die === 0 ? empty : die === -1 ? minus : plus);
-        numericResult += die;
-      }
-
-      this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s rolled %s', locale: locale}, roller, dice.join(' ')));
+      message = rollFudge(locale, roll, roller);
     } else {
-      if ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/))) {
-        try {
-          var evil = eval;
-          result = evil('Math.round(' + roll
-            .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
-            .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
-          this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s rolled %s (%s)', locale: locale}, roller, result, roll));
-        } catch (e) {
-          this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll));
-        }
-      } else {
-        this.sendGroupChatMessage(roomJID, i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll));
-      }
+      message = rollDie(locale, roll, roller);
     }
+    
+    this.sendGroupChatMessage(roomJID, message);
   }
-  
+}.bind(bot));
+
+bot.on("command.chat.roll", function (data) {
+  if (data.args) {
+    var fromJID = data.fromJID;
+    var roomJID = fromJID.bare();
+    var roomConfig = nconf.get('rooms:' + roomJID.toString());
+    var locale = roomConfig && roomConfig.locale ? roomConfig.locale : 'en';  
+    var roller = data.fromJID.getResource();
+    var roll = data.args.replace(/' '/g, '').toLowerCase();
+    var message = null;
+    
+    if ("fudge" == roll) {
+      message = rollFudge(locale, roll, roller);
+    } else {
+      message = rollDie(locale, roll, roller);
+    }
+    
+    this.sendPrivateChatMessage(fromJID, message);
+  }
 }.bind(bot));

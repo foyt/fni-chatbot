@@ -125,6 +125,15 @@ Bot.prototype.sendGroupChatMessage = function (roomJid, message) {
   this._client.send(msgStanza);
 };
 
+Bot.prototype.sendPrivateChatMessage = function (toJid, message) {
+  var msgStanza = new ltx.Element('message', {
+    type: 'chat',
+    from: this.userJid + "/" + this.nick,
+    to: toJid.toString()
+  }).c('body').t(message);
+  
+  this._client.send(msgStanza);
+};
 
 Bot.prototype.on = function (event, handler) {
   this._eventEmitter.on(event, handler);

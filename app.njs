@@ -29,10 +29,11 @@ var bot = new Bot(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSW
 
 bot.on("online", function (data) {
   var rooms = nconf.get('rooms');
-
-  Object.keys(rooms).forEach(function (room) {
-    this.joinRoom(room, this.nick);
-  }.bind(this));
+  if (rooms) {
+    Object.keys(rooms).forEach(function (room) {
+      this.joinRoom(room, this.nick);
+    }.bind(this));
+  }
 
 }.bind(bot));
 

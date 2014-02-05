@@ -140,7 +140,7 @@ Bot.prototype.on = function (event, handler) {
 };
 
 Bot.prototype.emit = function (event, data) {
-  return this._eventEmitter.emit(event, data);
+  return this._eventEmitter.emit(event, data||{});
 };
 
 module.exports = Bot;

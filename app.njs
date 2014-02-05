@@ -28,6 +28,8 @@ var bot = new Bot(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSW
 /* Events */
 
 bot.on("online", function (data) {
+  console.log("Bot online");
+
   var rooms = nconf.get('rooms');
   if (rooms) {
     Object.keys(rooms).forEach(function (room) {
@@ -46,6 +48,8 @@ bot.on("presence", function (data) {
 }.bind(bot));
 
 bot.on("invite-message", function (data) {
+  console.log("Invited to chat room " + data.fromJID.toString());
+
   var roomJID = data.fromJID.toString();
   nconf.set('rooms:' + roomJID, DEFAULT_ROOM_SETTINGS);
   this.joinRoom(roomJID, this.nick);

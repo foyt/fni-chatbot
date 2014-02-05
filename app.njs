@@ -19,11 +19,11 @@ i18n.configure({
 
 /* Conf */
 
-nconf.file({ file: 'config.json' });
+nconf.file({ file: process.env.FNI_CHATBOT_ROOM_CONFIG || 'config.json' });
 
-/* Bot */ 
+/* Bot */
 
-var bot = new Bot(nconf.get('global:credentials:userJid'), nconf.get('global:credentials:password'), nconf.get('global:credentials:nick'));
+var bot = new Bot(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSWORD, process.env.FNI_CHATBOT_NICK);
 
 /* Events */
 

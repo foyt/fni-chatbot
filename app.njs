@@ -152,10 +152,11 @@ bot.on("command.chat.roll", function (data) {
   }
 }.bind(bot));
 
-if (process.env.FNI_CHATBOT_HTTP_PORT) {
-  http.createServer(function(request, response) {
-    response.writeHead(200);
-    response.write("<!DOCTYPE HTML><html><body>I'm just botting around</body></html>");
-    response.end();
-  }).listen(process.env.FNI_CHATBOT_HTTP_PORT);
-}
+var httpPort = process.env.OPENSHIFT_NODEJS_PORT || "8080";
+var httpIp = process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";
+
+http.createServer(function(request, response) {
+  response.writeHead(200);
+  response.write("<!DOCTYPE HTML><html><body>I'm just botting around</body></html>");
+  response.end();
+}).listen(httpPort, httpIp);

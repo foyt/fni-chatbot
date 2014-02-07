@@ -5,7 +5,6 @@ var DEFAULT_ROOM_SETTINGS = {
 var i18n = require("i18n");
 var nconf = require('nconf');
 var dirty = require('dirty');
-var http = require("http");
 
 var moderators = dirty('moderators.db');
 moderators.set('online', []);
@@ -151,12 +150,3 @@ bot.on("command.chat.roll", function (data) {
     this.sendPrivateChatMessage(fromJID, message);
   }
 }.bind(bot));
-
-var httpPort = process.env.OPENSHIFT_NODEJS_PORT || "8080";
-var httpIp = process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";
-
-http.createServer(function(request, response) {
-  response.writeHead(200);
-  response.write("<!DOCTYPE HTML><html><body>I'm just botting around</body></html>");
-  response.end();
-}).listen(httpPort, httpIp);

@@ -11,7 +11,8 @@ function Bot(userJid, password, nick) {
   
   this._client = new Client({
     jid: this.userJid + "/" + this.nick,
-    password: this.password
+    password: this.password,
+    host: process.env.FNI_CHATBOT_HOST
   });
   
   this._client.on('online', function(data) {

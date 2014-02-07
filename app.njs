@@ -41,6 +41,10 @@ bot.on("online", function (data) {
 
 }.bind(bot));
 
+bot.on("offline", function (data) {
+  console.log("Bot offline");
+});
+
 bot.on("presence", function (data) {
   if (data.role == 'moderator') {
     var moderatorsOnline = moderators.get('online');

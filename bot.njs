@@ -18,6 +18,10 @@ function Bot(userJid, password, nick) {
     this.emit('online', data);
   }.bind(this));
   
+  this._client.on('offline', function(data) {
+    this.emit('offline', data);
+  }.bind(this));
+  
   this._client.on('error', function(e) {
     console.error(e);
   });

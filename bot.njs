@@ -9,11 +9,16 @@ function Bot(userJid, password, nick) {
   this.nick = nick;
   this._eventEmitter = new EventEmitter();
   
-  this._client = new Client({
+  var clientOpts = {
     jid: this.userJid + "/" + this.nick,
-    password: this.password,
-    host: process.env.FNI_CHATBOT_HOST
-  });
+    password: this.password
+  };
+  
+  if (process.env.FNI_CHATBOT_HOST) {
+    clientOpts.host = process.env.FNI_CHATBOT_HOST;
+  }
+  
+  this._client = new Client(clientOpts);
   
   this._client.on('online', function(data) {
     this.emit('online', data);

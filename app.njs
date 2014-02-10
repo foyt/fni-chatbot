@@ -57,7 +57,13 @@ bot.on("invite-message", function (data) {
 
   var roomJID = data.fromJID.toString();
   nconf.set('rooms:' + roomJID, DEFAULT_ROOM_SETTINGS);
-  this.joinRoom(roomJID, this.nick);
+  nconf.save(function (err) {
+    if (!err) {
+      this.joinRoom(roomJID, this.nick);
+    } else {
+      console.err(e);
+    }
+  }.bind(this));
 }.bind(bot));
 
 bot.on("command.chat.roomSetting", function (data) {

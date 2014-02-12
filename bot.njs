@@ -101,7 +101,7 @@
             }
           }
         }
-     });
+     }.bind(this));
 
     this._client.on("command.groupchat.roll", function (data) {
       if (data.args) {
@@ -140,7 +140,7 @@
     
         this._client.sendPrivateChatMessage(fromJID, message);
       }
-    }.bind(this._client));
+    }.bind(this));
   }
   
   Bot.prototype._getBotConfig = function (key) {

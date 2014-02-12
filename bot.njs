@@ -85,17 +85,18 @@
               var setting = data.args.substring(0, settingIndex);
               var value = data.args.substring(settingIndex + 1);    
               if (setting && value) {
+                console.log('RoomSetting ' + setting + ' to ' + value);
                 var roomJID = data.fromJID.bare();
                 var roomConfig = this._getBotConfig('rooms:' + roomJID.toString());
                 roomConfig[setting] = value;
-                this._setBotConfig('rooms:' + roomJID.toString(), roomConfig);
-                
-                switch (setting) {
-                  case 'nick':
-                    this._client.leaveRoom(roomJID);
-                    this._client.joinRoom(roomJID, roomSettings.nick);
-                  break;                 
-                }
+                this._setBotConfig('rooms:' + roomJID.toString(), roomConfig, function (err) {
+                  switch (setting) {
+                    case 'nick':
+                      this._client.leaveRoom(roomJID);
+                      this._client.joinRoom(roomJID, roomConfig.nick);
+                    break;                 
+                  }
+                }.bind(this));
               }
             }
           }

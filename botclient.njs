@@ -1,10 +1,11 @@
 (function() {
+  
   var Client = require('node-xmpp-client');
   var ltx = require('ltx');
   var JID = require('node-xmpp-core').JID;
   var EventEmitter = require('events').EventEmitter;
 
-  function Bot(userJid, password, nick) {
+  function BotClient(userJid, password, nick) {
     this.userJid = userJid;
     this.password = password;
     this.nick = nick;
@@ -120,13 +121,13 @@
     }.bind(this));
   }
 
-  Bot.prototype.joinRoom = function (roomJid, nick) {
+  BotClient.prototype.joinRoom = function (roomJid, nick) {
     this._client.send(new ltx.Element('presence', { to: roomJid + '/' + nick })
       .c('x', { xmlns: 'http://jabber.org/protocol/muc' })
     );
   };
 
-  Bot.prototype.sendGroupChatMessage = function (roomJid, message) {
+  BotClient.prototype.sendGroupChatMessage = function (roomJid, message) {
     var msgStanza = new ltx.Element('message', {
       type: 'groupchat',
       from: this.userJid + "/" + this.nick,
@@ -136,7 +137,7 @@
     this._client.send(msgStanza);
   };
 
-  Bot.prototype.sendPrivateChatMessage = function (toJid, message) {
+  BotClient.prototype.sendPrivateChatMessage = function (toJid, message) {
     var msgStanza = new ltx.Element('message', {
       type: 'chat',
       from: this.userJid + "/" + this.nick,
@@ -146,14 +147,14 @@
     this._client.send(msgStanza);
   };
 
-  Bot.prototype.on = function (event, handler) {
+  BotClient.prototype.on = function (event, handler) {
     this._eventEmitter.on(event, handler);
   };
 
-  Bot.prototype.emit = function (event, data) {
+  BotClient.prototype.emit = function (event, data) {
     return this._eventEmitter.emit(event, data||{});
   };
 
-  module.exports = Bot;
+  module.exports = BotClient;
   
 }).call(this);

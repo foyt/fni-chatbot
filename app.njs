@@ -11,7 +11,7 @@
   var moderators = dirty('moderators.db');
   moderators.set('online', []);
   
-  var Bot = require('./bot.njs');
+  var BotClient = require('./botclient.njs');
 
   /* Locale */
 
@@ -24,13 +24,13 @@
 
   nconf.file({ file: process.env.FNI_CHATBOT_ROOM_CONFIG || 'config.json' });
 
-  /* Bot */
+  /* Client */
 
-  var bot = new Bot(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSWORD, process.env.FNI_CHATBOT_NICK);
+  var client = new BotClient(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSWORD, process.env.FNI_CHATBOT_NICK);
 
   /* Events */
 
-  bot.on("online", function (data) {
+  client.on("online", function (data) {
     console.log("Bot online");
     var rooms = nconf.get('rooms');
     if (rooms) {
@@ -38,21 +38,21 @@
         this.joinRoom(room, this.nick);
       }.bind(this));
     }
-  }.bind(bot));
+  }.bind(client));
 
-  bot.on("offline", function (data) {
+  client.on("offline", function (data) {
     console.log("Bot offline");
   });
 
-  bot.on("presence", function (data) {
+  client.on("presence", function (data) {
     if (data.role == 'moderator') {
       var moderatorsOnline = moderators.get('online');
       moderatorsOnline.push(data.fromJID.toString());
       moderators.set('online', moderatorsOnline);
     }
-  }.bind(bot));
+  }.bind(client));
 
-  bot.on("invite-message", function (data) {
+  client.on("invite-message", function (data) {
     console.log("Invited to chat room " + data.fromJID.toString());
     var roomJID = data.fromJID.toString();
     nconf.set('rooms:' + roomJID, DEFAULT_ROOM_SETTINGS);
@@ -63,9 +63,9 @@
         console.err(e);
       }
     }.bind(this));
-  }.bind(bot));
+  }.bind(client));
 
-  bot.on("command.chat.roomSetting", function (data) {
+  client.on("command.chat.roomSetting", function (data) {
     if (data.args) {
       var moderatorsOnline = moderators.get('online');
    
@@ -117,7 +117,7 @@
     }
   }
 
-  bot.on("command.groupchat.roll", function (data) {
+  client.on("command.groupchat.roll", function (data) {
     if (data.args) {
       var roomJID = data.fromJID.bare();
       var roomConfig = nconf.get('rooms:' + roomJID.toString());
@@ -134,9 +134,9 @@
     
       this.sendGroupChatMessage(roomJID, message);
     }
-  }.bind(bot));
+  }.bind(client));
 
-  bot.on("command.chat.roll", function (data) {
+  client.on("command.chat.roll", function (data) {
     if (data.args) {
       var fromJID = data.fromJID;
       var roomJID = fromJID.bare();
@@ -154,7 +154,7 @@
     
       this.sendPrivateChatMessage(fromJID, message);
     }
-  }.bind(bot));
+  }.bind(client));
 
   var httpPort = process.env.FNI_CHATBOT_HTTP_PORT || process.env.OPENSHIFT_NODEJS_PORT || "8080";
   var httpIp = process.env.FNI_CHATBOT_HTTP_IP || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";

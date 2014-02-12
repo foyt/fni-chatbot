@@ -1,5 +1,4 @@
-/config.json
-/moderators.db
 /node_modules
 /.settings
 /.project
+/data

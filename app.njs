@@ -6,6 +6,7 @@
   var i18n = require("i18n");
   var nconf = require('nconf');
   var dirty = require('dirty');
+  var http = require("http");
 
   var moderators = dirty('moderators.db');
   moderators.set('online', []);
@@ -154,5 +155,13 @@
       this.sendPrivateChatMessage(fromJID, message);
     }
   }.bind(bot));
+
+  var httpPort = process.env.FNI_CHATBOT_HTTP_PORT || process.env.OPENSHIFT_NODEJS_PORT || "8080";
+  var httpIp = process.env.FNI_CHATBOT_HTTP_IP || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";
+  http.createServer(function(request, response) {
+    response.writeHead(200);
+    response.write("OK");
+    response.end();
+  }).listen(httpPort, httpIp);
 
 }).call(this);

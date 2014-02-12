@@ -7,7 +7,10 @@
   var dataDir = process.env.FNI_CHATBOT_DATADIR || (__dirname + '/data');
   nconf.file({ file: dataDir + '/bocconfig.json' });
 
-  var bot = new Bot(process.env.FNI_CHATBOT_USERJID, process.env.FNI_CHATBOT_PASSWORD, process.env.FNI_CHATBOT_NICK, nconf, dataDir);
+  var config = require(dataDir + '/config.json');
+  (config.bots||[]).forEach(function (botConfig) {
+    new Bot(botConfig.userJid, botConfig.password, botConfig.nick, nconf, dataDir);
+  });
 
   var httpPort = process.env.FNI_CHATBOT_HTTP_PORT || process.env.OPENSHIFT_NODEJS_PORT || "8080";
   var httpIp = process.env.FNI_CHATBOT_HTTP_IP || process.env.OPENSHIFT_NODEJS_IP || "0.0.0.0";

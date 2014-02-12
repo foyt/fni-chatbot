@@ -37,7 +37,7 @@
     /* Events */
 	
 	this._client.on("online", function (data) {
-      console.log("Bot online");
+      console.log("Bot '" + this._client.userJid +  "' online");
       var rooms = this._getBotConfig('rooms');
       if (rooms) {
         Object.keys(rooms).forEach(function (room) {

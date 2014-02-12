@@ -127,6 +127,10 @@
     );
   };
 
+  BotClient.prototype.leaveRoom = function (roomJid, nick) {
+    this._client.send(new ltx.Element('presence', { 'to': roomJid + '/' + nick, 'type': 'unavailable' }));
+  };
+
   BotClient.prototype.sendGroupChatMessage = function (roomJid, message) {
     var msgStanza = new ltx.Element('message', {
       type: 'groupchat',

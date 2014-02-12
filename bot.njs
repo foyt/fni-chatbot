@@ -5,6 +5,8 @@
   var i18n = require("i18n");
   var crypto = require('crypto');
   var dirty = require('dirty');
+  var _ = require('underscore');
+  
   var BotClient = require('./botclient.njs');
 
   /* Defaults */
@@ -38,11 +40,11 @@
 	
 	this._client.on("online", function (data) {
       console.log("Bot '" + this._client.userJid +  "' online");
-      var rooms = this._getBotConfig('rooms');
-      if (rooms) {
-        Object.keys(rooms).forEach(function (room) {
+      var roomConfigs = this._getBotConfig('rooms');
+      if (roomConfigs) {
+        Object.keys(roomConfigs).forEach(function (room) {
           console.log("Joining room '" + room + "'");
-          this._client.joinRoom(room, this._client.nick);
+          this._client.joinRoom(room, roomConfigs[room].nick);
         }.bind(this));
       }
     }.bind(this));
@@ -62,9 +64,12 @@
 	this._client.on("invite-message", function (data) {
       console.log("Invited to chat room " + data.fromJID.toString());
       var roomJID = data.fromJID.toString();
-      this._setBotConfig('rooms:' + roomJID, DEFAULT_ROOM_SETTINGS, function (err) {
+      var roomSettings = _.clone(DEFAULT_ROOM_SETTINGS);
+      roomSettings.nick = this._client.nick;
+      
+      this._setBotConfig('rooms:' + roomJID, roomSettings, function (err) {
         if (!err) {
-          this._client.joinRoom(roomJID, this._client.nick);
+          this._client.joinRoom(roomJID, roomSettings.nick);
         } else {
           console.err(e);
         }
@@ -84,6 +89,13 @@
                 var roomConfig = this._getBotConfig('rooms:' + roomJID.toString());
                 roomConfig[setting] = value;
                 this._setBotConfig('rooms:' + roomJID.toString(), roomConfig);
+                
+                switch (setting) {
+                  case 'nick':
+                    this._client.leaveRoom(roomJID);
+                    this._client.joinRoom(roomJID, roomSettings.nick);
+                  break;                 
+                }
               }
             }
           }

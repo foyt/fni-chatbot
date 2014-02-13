@@ -115,8 +115,10 @@
               }.bind(this));
             }
           }
+        } else {
+          console.warn("non-modarator " + fromJID + " tried to change room settings");
         }
-        }
+      }
      }.bind(this));
 
     this._client.on("command.groupchat.roll", function (data) {

@@ -66,9 +66,11 @@
                   botJoined: (status && status.attrs.code == 110)||false,
                   fromJID: new JID(stanza.attrs.from),
                   toJID: new JID(stanza.attrs.to),
+                  type: stanza.attrs.type,
                   nick: item.attrs.nick,
                   affiliation: item.attrs.affiliation,
                   role: item.attrs.role,
+                  item: item,
                   stanza: stanza
                 });
               }

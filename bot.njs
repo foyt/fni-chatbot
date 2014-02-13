@@ -4,7 +4,7 @@
   
   var i18n = require("i18n");
   var crypto = require('crypto');
-  var dirty = require('dirty');
+  var JID = require('node-xmpp-core').JID;
   var _ = require('underscore');
   
   var BotClient = require('./botclient.njs');
@@ -25,9 +25,6 @@
   function Bot(userJid, password, nick, nconf, dataDir) {
     this._id = crypto.createHash('md5').update(userJid + '/' + nick).digest('hex');
 
-    this._moderators = dirty(dataDir + '/' + this._id + '_moderators.db');
-    this._moderators.set('online', []);
-    
     /* Conf */
     
     this._nconf = nconf;
@@ -55,9 +52,29 @@
 	
 	this._client.on("presence", function (data) {
       if (data.role == 'moderator') {
-        var moderatorsOnline = this._moderators.get('online');
-        moderatorsOnline.push(data.fromJID.toString());
-        this._moderators.set('online', moderatorsOnline);
+        var fromJID = data.fromJID.toString();
+        var roomJID = data.fromJID.bare().toString();
+        
+        var roomSettings = this._getBotConfig("rooms:" + roomJID);
+        var moderators = roomSettings.moderators||[];
+        
+        if ("unavailable" == data.type) {
+          console.log("Room " + roomJID + ' moderator ' + fromJID + ' leaved');
+          if (moderators.indexOf(fromJID) != -1) {
+            moderators.splice(moderators.indexOf(fromJID), 1);
+          }
+        } else {
+          console.log("Room " + roomJID + ' moderator ' + fromJID + ' entered');
+          if (moderators.indexOf(fromJID) == -1) {
+            moderators.push(fromJID);
+          }
+        }
+        
+        roomSettings.moderators = moderators;
+        
+        this._setBotConfig('rooms:' + roomJID, roomSettings, function (err) {
+          console.log("Room config saved");
+        });        
       }
 	}.bind(this));
 	
@@ -78,28 +95,30 @@
 	
     this._client.on("command.chat.roomSetting", function (data) {
       if (data.args) {
-        var moderatorsOnline = this._moderators.get('online');
-        if (moderatorsOnline.indexOf(data.fromJID.toString()) != -1) {
+        var fromJID = data.fromJID.toString();
+        var roomJID = data.fromJID.bare().toString();
+
+        var roomSettings = this._getBotConfig('rooms:' + roomJID);
+        var moderators = roomSettings.moderators||[];
+        if (moderators.indexOf(fromJID) != -1) {
           var settingIndex = data.args.indexOf(' ');
-            if (settingIndex > -1) {
-              var setting = data.args.substring(0, settingIndex);
-              var value = data.args.substring(settingIndex + 1);    
-              if (setting && value) {
-                console.log('RoomSetting ' + setting + ' to ' + value);
-                var roomJID = data.fromJID.bare();
-                var roomConfig = this._getBotConfig('rooms:' + roomJID.toString());
-                roomConfig[setting] = value;
-                this._setBotConfig('rooms:' + roomJID.toString(), roomConfig, function (err) {
-                  switch (setting) {
-                    case 'nick':
-                      this._client.leaveRoom(roomJID);
-                      this._client.joinRoom(roomJID, roomConfig.nick);
-                    break;                 
-                  }
-                }.bind(this));
-              }
+          if (settingIndex > -1) {
+            var setting = data.args.substring(0, settingIndex);
+            var value = data.args.substring(settingIndex + 1);    
+            if (setting && value) {
+              console.log('RoomSetting ' + setting + ' to ' + value);
+              roomSettings[setting] = value;
+              this._setBotConfig('rooms:' + roomJID.toString(), roomSettings, function (err) {
+                switch (setting) {
+                  case 'nick':
+                    this._client.leaveRoom(roomJID);
+                    this._client.joinRoom(roomJID, roomSettings.nick);
+                  break;                 
+                }
+              }.bind(this));
             }
           }
+        }
         }
      }.bind(this));
 
@@ -144,7 +163,7 @@
   }
   
   Bot.prototype._getBotConfig = function (key) {
-    return this._nconf.get(this._client.userJid + ':' + key);
+    return this._nconf.get(this._client.userJid + ':' + key)||{};
   };
   
   Bot.prototype._setBotConfig = function (key, value, callback) {

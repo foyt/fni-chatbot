@@ -5,7 +5,7 @@
   var Bot = require('./bot.njs');
   
   var dataDir = process.env.FNI_CHATBOT_DATADIR || (__dirname + '/data');
-  nconf.file({ file: dataDir + '/bocconfig.json' });
+  nconf.file({ file: dataDir + '/botconfig.json' });
 
   var config = require(dataDir + '/config.json');
   (config.bots||[]).forEach(function (botConfig) {

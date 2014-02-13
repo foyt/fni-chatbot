@@ -3,7 +3,6 @@
   /* Imports */
   
   var i18n = require("i18n");
-  var crypto = require('crypto');
   var JID = require('node-xmpp-core').JID;
   var _ = require('underscore');
   
@@ -23,8 +22,6 @@
   });
   
   function Bot(userJid, password, nick, nconf, dataDir) {
-    this._id = crypto.createHash('md5').update(userJid + '/' + nick).digest('hex');
-
     /* Conf */
     
     this._nconf = nconf;

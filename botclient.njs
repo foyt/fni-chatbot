@@ -153,6 +153,47 @@
     this._client.send(msgStanza);
   };
 
+  BotClient.prototype.ping = function (to, callback, timeout) {
+    var id = 'ping' + Math.ceil(Math.random() * 99999);
+    var pingIq = new ltx.Element('iq', { 
+      'from': this.userJid + "/" + this.nick,
+      'to': to.toString(), 
+      'type': 'get',
+      'id': id 
+    }).c('ping', { xmlns: 'urn:xmpp:ping' });
+    
+    this._client.send(pingIq);
+    
+    var iqListener = null;
+    var timeoutId = null;
+    
+    timeoutId = setTimeout(function () {
+      if (iqListener) {
+        callback("timeout", null);
+        this.removeListener("iq", iqListener);
+      }
+    }.bind(this), timeout);
+    
+    iqListener = function (iq) {
+      var stanza = iq.stanza;
+      if (stanza.attrs.id == id) {
+        this.removeListener("iq", iqListener);
+        clearTimeout(timeoutId);
+        timeoutId = iqListener = null;
+        
+        var error = null;
+        var errorChild = stanza.getChild('error');
+        if (errorChild) {
+          error = errorChild.getChild('service-unavailable') ? 'service-unavailable' : 'unknown error';
+        }
+        
+        callback(error, stanza);
+      }
+    }.bind(this);
+    
+    this.on("iq", iqListener);
+  };
+
   BotClient.prototype.on = function (event, handler) {
     this._eventEmitter.on(event, handler);
   };
@@ -160,7 +201,11 @@
   BotClient.prototype.emit = function (event, data) {
     return this._eventEmitter.emit(event, data||{});
   };
-
+ 
+  BotClient.prototype.removeListener = function (event, listener) {
+    this._eventEmitter.removeListener(event, listener);
+  };
+  
   module.exports = BotClient;
   
 }).call(this);

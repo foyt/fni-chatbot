@@ -29,7 +29,7 @@
     /* Client */
 
     this._client = new BotClient(userJid, password, nick);
-    
+
     /* Events */
 	
 	this._client.on("online", function (data) {
@@ -160,6 +160,33 @@
       }
     }.bind(this));
   }
+  
+  Bot.prototype.ping = function (to, callback, timeout) {
+    this._client.ping(to, callback, timeout);
+  };
+  
+  Bot.prototype.getRooms = function () {
+    var result = [];
+    
+    var roomConfigs = this._getBotConfig('rooms');
+    if (roomConfigs) {
+      var rooms = Object.keys(roomConfigs);
+      
+      for (var i = 0, l = rooms.length; i < l; i++) {
+        var room = rooms[i];
+        var roomJid = new JID(room);
+        roomJid.setResource(roomConfigs[room].nick);
+        result.push(roomJid);
+      }
+    }
+    
+    return result;
+  };
+
+  
+  Bot.prototype.getUserJid = function () {
+    return this._client.userJid;
+  };
   
   Bot.prototype._getBotConfig = function (key) {
     return this._nconf.get(this._client.userJid + ':' + key)||{};

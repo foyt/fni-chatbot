@@ -21,6 +21,8 @@
     }
   
     this._client = new Client(clientOpts);
+    this._client.connection.socket.setTimeout(0);
+    this._client.connection.socket.setKeepAlive(true, 10000);
   
     this._client.on('online', function(data) {
       this.emit('online', data);

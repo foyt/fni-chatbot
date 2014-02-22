@@ -133,7 +133,7 @@
         if ("fudge" == roll) {
           message = this._rollFudge(locale, roll, roller);
         } else {
-          message = this._rollDie(locale, roll, roller);
+          message = this._rollDice(locale, roll, roller);
         }
     
         this._client.sendGroupChatMessage(roomJID, message);
@@ -151,9 +151,9 @@
         var message = null;
     
         if ("fudge" == roll) {
-          message = rollFudge(locale, roll, roller);
+          message = this._rollFudge(locale, roll, roller);
         } else {
-          message = rollDie(locale, roll, roller);
+          message = this._rollDice(locale, roll, roller);
         }
     
         this._client.sendPrivateChatMessage(fromJID, message);
@@ -216,20 +216,48 @@
       
     return i18n.__({phrase: '%s rolled %s', locale: locale}, roller, dice.join(' '));
   };
+  
+  Bot.prototype._validateRoll = function (roll) {
+    return ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/)));
+  };
+  
+  Bot.prototype._evalRoll = function (roll) {
+    var evil = eval;
+    return evil('Math.round(' + roll
+      .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
+      .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
+  };
 
-  Bot.prototype._rollDie = function(locale, roll, roller) {
-    if ((new RegExp("^[d0-9-+/*()]*$")).test(roll) && (!roll.match(/d[^0-9]/))) {
-      try {
-        var evil = eval;
-        result = evil('Math.round(' + roll
-          .replace(/([0-9]{1,})([\*]{0,1})(d)([0-9]{1,})/g, "($1*(1 + (Math.random()*($4 - 1))))")
-          .replace(/(d)([0-9]{1,})/g, "(1 + (Math.random()*($2 - 1)))") + ')');
-        return i18n.__({phrase: '%s rolled %s (%s)', locale: locale}, roller, result, roll);
-      } catch (e) {
-        return i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll);
+  Bot.prototype._rollDice = function(locale, text, roller) {
+    var valid = true;
+    var results = [];
+    var i, l;
+    
+    var rolls = text.split(",");
+    for (i = 0, l = rolls.length; i < l; i++) {
+      var roll = rolls[i];
+      if (this._validateRoll(roll)) {
+        results.push({
+          result: this._evalRoll(roll),
+          roll: roll
+        });
+      } else {
+        valid = false;
       }
+    }
+    
+    if (valid) {
+      var outcome = '';
+      for (i = 0, l = results.length; i < l; i++) {
+        outcome += results[i].result + ' (' + results[i].roll + ')';
+        if (i < (l - 1)) {
+          outcome += ', ';
+        }
+      }
+    
+      return i18n.__({phrase: '%s rolled %s', locale: locale}, roller, outcome);
     } else {
-      return i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale}, roller, roll);
+      return i18n.__({phrase: '%s fumbled a die roll (%s)', locale: locale }, roller, text);
     }
   };
   

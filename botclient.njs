@@ -4,6 +4,7 @@
   var ltx = require('ltx');
   var JID = require('node-xmpp-core').JID;
   var EventEmitter = require('events').EventEmitter;
+  var _ = require('underscore');
 
   function BotClient(userJid, password, nick) {
     this.userJid = userJid;
@@ -135,22 +136,22 @@
     this._client.send(new ltx.Element('presence', { 'to': roomJid + '/' + nick, 'type': 'unavailable' }));
   };
 
-  BotClient.prototype.sendGroupChatMessage = function (roomJid, message) {
+  BotClient.prototype.sendGroupChatMessage = function (roomJid, message, extended) {
     var msgStanza = new ltx.Element('message', {
       type: 'groupchat',
       from: this.userJid + "/" + this.nick,
       to: roomJid.toString()
-    }).c('body').t(message);
-  
+    }).c('body', extended).t(message);
+
     this._client.send(msgStanza);
   };
 
-  BotClient.prototype.sendPrivateChatMessage = function (toJid, message) {
+  BotClient.prototype.sendPrivateChatMessage = function (toJid, message, extended) {
     var msgStanza = new ltx.Element('message', {
       type: 'chat',
       from: this.userJid + "/" + this.nick,
       to: toJid.toString()
-    }).c('body').t(message);
+    }).c('body', extended).t(message);
   
     this._client.send(msgStanza);
   };

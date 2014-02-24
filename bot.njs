@@ -136,7 +136,10 @@
           message = this._rollDice(locale, roll, roller);
         }
     
-        this._client.sendGroupChatMessage(roomJID, message);
+        this._client.sendGroupChatMessage(roomJID, message, {
+          'fcb-command': 'roll',
+          'fcb-roll': roll
+        });
       }
     }.bind(this));
 
@@ -156,7 +159,10 @@
           message = this._rollDice(locale, roll, roller);
         }
     
-        this._client.sendPrivateChatMessage(fromJID, message);
+        this._client.sendPrivateChatMessage(fromJID, message, {
+          'fcb-command': 'roll',
+          'fcb-roll': roll
+        });
       }
     }.bind(this));
   }

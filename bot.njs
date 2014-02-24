@@ -126,7 +126,7 @@
         var roomJID = data.fromJID.bare();
         var roomConfig = this._getBotConfig('rooms:' + roomJID.toString());
         var locale = roomConfig && roomConfig.locale ? roomConfig.locale : 'en';  
-        var roller = data.fromJID.getResource();
+        var roller = data.fromJID.getResource().replace(/\\20/g, " ");
         var roll = data.args.replace(/' '/g, '').toLowerCase();
         var message = null;
     
@@ -149,7 +149,7 @@
         var roomJID = fromJID.bare();
         var roomConfig = this._getBotConfig('rooms:' + roomJID.toString());
         var locale = roomConfig && roomConfig.locale ? roomConfig.locale : 'en';  
-        var roller = data.fromJID.getResource();
+        var roller = data.fromJID.getResource().replace(/\\20/g, " ");
         var roll = data.args.replace(/' '/g, '').toLowerCase();
         var message = null;
     
